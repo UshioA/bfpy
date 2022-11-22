@@ -1,6 +1,7 @@
 from op import Op, Opcode
 
-def op_gen(s:str):
+
+def op_gen(s: str):
   oplist = []
   jmpstack = []
   for i in s:
@@ -21,8 +22,8 @@ def op_gen(s:str):
       oplist.append(Op(Opcode.JZ, len(oplist)))
     elif i == ']':
       pair = jmpstack.pop()
-      jnz = Op(Opcode.JNZ, pair+1)
-      oplist[pair].jmptarget = len(oplist)+1
+      jnz = Op(Opcode.JNZ, pair + 1)
+      oplist[pair].jmptarget = len(oplist) + 1
       oplist.append(jnz)
     else:
       continue
