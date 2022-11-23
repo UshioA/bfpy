@@ -1,7 +1,7 @@
 from copy import deepcopy
 from op_gen import op_gen
 from op import Opcode, Op
-from fold_op import *
+from ir import *
 
 
 def fold_reallocate(ir_list: list[IR]) -> list[IR]:

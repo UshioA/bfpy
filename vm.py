@@ -1,7 +1,7 @@
 import op
 import sys
 from op import Opcode
-from fold_op import IR, IRType
+from ir import IR, IRType
 from io import StringIO
 
 class InterpretVM:
