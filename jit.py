@@ -25,8 +25,8 @@ class JitVM:
   def init_function(self):
     memptr = peachpy.Argument(peachpy.ptr(peachpy.uint8_t))
     with Function('is_this_one_step', [memptr], result_type=None) as exec:
-      dataptr = GeneralPurposeRegister64()
-      off = GeneralPurposeRegister64()
+      dataptr = r12
+      off = r11
       LOAD.ARGUMENT(dataptr, memptr)
       for instr in self.oplist:
         if instr.opcode == IRType.ADD:
