@@ -1,9 +1,9 @@
 import ctypes
 from peachpy import *
 from peachpy.x86_64 import *
+from peachpy.x86_64.registers import *
 from ir import *
 import sys
-
 
 class paired_labels:
   def __init__(self, start, end) -> None:
@@ -25,8 +25,8 @@ class JitVM:
   def init_function(self):
     memptr = peachpy.Argument(peachpy.ptr(peachpy.uint8_t))
     with Function('is_this_one_step', [memptr], result_type=None) as exec:
-      dataptr = r13
-      off = r12
+      dataptr = GeneralPurposeRegister64()
+      off = GeneralPurposeRegister64()
       LOAD.ARGUMENT(dataptr, memptr)
       for instr in self.oplist:
         if instr.opcode == IRType.ADD:
@@ -50,27 +50,33 @@ class JitVM:
           ADD(al, [dataptr + x])
           MOV([dataptr + x], al)
         elif instr.opcode == IRType.OUT:
-          if sys.platform == 'darwin':
-            MOV(rax, 0x2000004)
+          if sys.platform == 'win32':
+            pass
           else:
-            MOV(rax, 1)
-          MOV(rdi, 1)
-          MOV(off, instr.offset)
-          ADD(off, dataptr)
-          MOV(rsi, off)
-          MOV(rdx, 1)
-          SYSCALL()
+            if sys.platform == 'darwin':
+              MOV(rax, 0x2000004)
+            else:
+              MOV(rax, 1)
+            MOV(rdi, 1)
+            MOV(off, instr.offset)
+            ADD(off, dataptr)
+            MOV(rsi, off)
+            MOV(rdx, 1)
+            SYSCALL()
         elif instr.opcode == IRType.IN:
-          if sys.platform == 'darwin':
-            MOV(rax, 0x2000003)
+          if sys.platform == 'win32':
+            pass
           else:
-            MOV(rax, 0)
-          MOV(rdi, 0)
-          MOV(off, instr.offset)
-          ADD(off, dataptr)
-          MOV(rsi, off)
-          MOV(rdx, 1)
-          SYSCALL()
+            if sys.platform == 'darwin':
+              MOV(rax, 0x2000003)
+            else:
+              MOV(rax, 0)
+            MOV(rdi, 0)
+            MOV(off, instr.offset)
+            ADD(off, dataptr)
+            MOV(rsi, off)
+            MOV(rdx, 1)
+            SYSCALL()
         elif instr.opcode == IRType.JZ:
           loop_start_label = Label()
           loop_end_label = Label()

@@ -5,6 +5,10 @@ from optimize_gen import *
 from io import StringIO
 import sys
 if __name__ == '__main__':
+  if sys.platform == 'win32':
+    print("""Sorry you r using win32 platform so IO is not supported. 
+Writing assembly with peachpy for Windows turned out to be hard to me.
+Fortunately all other functions remains the same.""")
   argv = sys.argv
   if len(argv) > 1:
     with open(argv[1], 'r') as f:
