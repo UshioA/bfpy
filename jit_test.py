@@ -10,12 +10,7 @@ if __name__ == '__main__':
     with open(argv[1], 'r') as f:
       text = ''.join(f.readlines())
   code = optimize_gen(op_gen(text))
-  # for i, j in enumerate(code):
-  #   print(i, j)
-  i=''
-  if len(argv) > 2:
-    i = '\n'.join(argv[2:] + ['\n'])
-  jitvm = JitVM(code, tape_len=1<<12)
+  jitvm = JitVM(code, 4096)
   t1 = time()
   jitvm.exec()
   print()

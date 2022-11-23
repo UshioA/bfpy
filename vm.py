@@ -4,6 +4,7 @@ from op import Opcode
 from ir import IR, IRType
 from io import StringIO
 
+
 class InterpretVM:
   def __init__(self, oplist, tape_len, input=None) -> None:
     self.oplist = oplist
@@ -70,12 +71,12 @@ class PlainInterpretVM(InterpretVM):
 
   def do_add(self):
     self.tape[self.tape_pointer] = sum(
-      [1, self.tape[self.tape_pointer]]) & 0xff
+        [1, self.tape[self.tape_pointer]]) & 0xff
     self.program_counter += 1
 
   def do_sub(self):
     self.tape[self.tape_pointer] = sum(
-      [1, ~1, self.tape[self.tape_pointer]]) & 0xff
+        [1, ~1, self.tape[self.tape_pointer]]) & 0xff
     self.program_counter += 1
 
   def do_in(self):
@@ -156,13 +157,15 @@ class OptimizedInterpretVM(PlainInterpretVM):
 
   def do_out(self):
     sys.stdout.write(
-      chr(self.tape[self.tape_pointer + self.oplist[self.program_counter].offset]))
+        chr(self.tape[self.tape_pointer + self.oplist[self.program_counter].offset]))
     sys.stdout.flush()
     self.program_counter += 1
 
   def do_mul(self):
-    x,y = self.oplist[self.program_counter].param
-    self.tape[self.tape_pointer + x] = (self.tape[self.tape_pointer + x] + (self.tape[self.tape_pointer] * y) & 0xff) & 0xff
+    x, y = self.oplist[self.program_counter].param
+    y = int(y, 2)
+    self.tape[self.tape_pointer + x] = (
+        self.tape[self.tape_pointer + x] + (self.tape[self.tape_pointer] * y)) & 0xff
     self.program_counter += 1
 
   def one_step(self):

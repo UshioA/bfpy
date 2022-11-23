@@ -96,7 +96,7 @@ def mul_optimize(ir_list: list[IR]) -> list[IR]:
       i = j
       continue
     mem.pop(0)
-    optblock = [IR(IRType.MUL, param=(p, mem[p]))
+    optblock = [IR(IRType.MUL, param=(p, bin(mem[p])))
                 for p in mem]
     ir = ir[:i] + optblock + \
         [IR(IRType.LOAD, param=0)] + ir[j + 1:]
@@ -246,4 +246,4 @@ def fold_gen(oplist: list[Op]) -> list[IR]:
 
 
 def optimize_gen(oplist: list[Op]) -> list[IR]:
-  return fold_reallocate((offset_optimize(redundant_optimize(load_optimize(dead_loop(fold_gen(oplist)))))))
+  return fold_reallocate(mul_optimize(offset_optimize(redundant_optimize(load_optimize(dead_loop(fold_gen(oplist)))))))

@@ -12,7 +12,7 @@ if __name__ == '__main__':
   code = optimize_gen(op_gen(text))
   # for i, j in enumerate(code):
   #   print(i, j)
-  i=''
+  i = ''
   if len(argv) > 2:
     i = '\n'.join(argv[2:] + ['\n'])
   irvm = OptimizedInterpretVM(code, input=i)

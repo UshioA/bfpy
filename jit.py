@@ -13,6 +13,7 @@ class paired_labels:
 
 class JitVM:
   def __init__(self, oplist: list[IR], tape_len: int = 1 << 27):
+    sys.setrecursionlimit(10000)
     self.tape_len = tape_len
     self.oplist = oplist
     self.tape_pointer = 0
@@ -22,58 +23,69 @@ class JitVM:
     self.init_function()
 
   def init_function(self):
-    self.memptr = peachpy.Argument(peachpy.ptr(peachpy.uint8_t))
-    with peachpy.x86_64.Function('is_this_one_step', [self.memptr], result_type=None) as exec:
-      dataptr = peachpy.x86_64.r13
-      off = peachpy.x86_64.r12
-      peachpy.x86_64.LOAD.ARGUMENT(dataptr, self.memptr)
+    memptr = peachpy.Argument(peachpy.ptr(peachpy.uint8_t))
+    with Function('is_this_one_step', [memptr], result_type=None) as exec:
+      dataptr = r13
+      off = r12
+      LOAD.ARGUMENT(dataptr, memptr)
       for instr in self.oplist:
         if instr.opcode == IRType.ADD:
           if instr.param > 0:
-            peachpy.x86_64.ADD([dataptr + instr.offset], instr.param)
+            ADD([dataptr + instr.offset], instr.param)
           else:
-            peachpy.x86_64.SUB([dataptr + instr.offset], -instr.param)
+            SUB([dataptr + instr.offset], -instr.param)
         elif instr.opcode == IRType.SHR:
           if instr.param > 0:
-            peachpy.x86_64.ADD(dataptr, instr.param)
+            ADD(dataptr, instr.param)
           else:
-            peachpy.x86_64.SUB(dataptr, -instr.param)
+            SUB(dataptr, -instr.param)
+        elif instr.opcode == IRType.LOAD:
+          MOV([dataptr + instr.offset], instr.param)
+        elif instr.opcode == IRType.MUL:
+          x, y = instr.param
+          y = int(y, 2)
+          MOV(al, y)
+          MUL([dataptr])
+          # AND(rax, 0xff)
+          ADD(al, [dataptr + x])
+          MOV([dataptr + x], al)
         elif instr.opcode == IRType.OUT:
           if sys.platform == 'darwin':
-            peachpy.x86_64.MOV(peachpy.x86_64.rax, 0x2000004)
+            MOV(rax, 0x2000004)
           else:
-            peachpy.x86_64.MOV(peachpy.x86_64.rax, 1)
-          peachpy.x86_64.MOV(peachpy.x86_64.rdi, 0)
-          peachpy.x86_64.MOV(off, instr.offset)
-          peachpy.x86_64.ADD(off, dataptr)
-          peachpy.x86_64.MOV(peachpy.x86_64.rsi, off)
-          peachpy.x86_64.MOV(peachpy.x86_64.rdx, 1)
-          peachpy.x86_64.SYSCALL()
+            MOV(rax, 1)
+          MOV(rdi, 1)
+          MOV(off, instr.offset)
+          ADD(off, dataptr)
+          MOV(rsi, off)
+          MOV(rdx, 1)
+          SYSCALL()
         elif instr.opcode == IRType.IN:
           if sys.platform == 'darwin':
-            peachpy.x86_64.MOV(peachpy.x86_64.rax, 0x2000003)
+            MOV(rax, 0x2000003)
           else:
-            peachpy.x86_64.MOV(peachpy.x86_64.rax, 0)
-          peachpy.x86_64.MOV(peachpy.x86_64.rdi, 0)
-          peachpy.x86_64.MOV(off, instr.offset)
-          peachpy.x86_64.ADD(off, dataptr)
-          peachpy.x86_64.MOV(peachpy.x86_64.rsi, off)
-          peachpy.x86_64.MOV(peachpy.x86_64.rdx, 1)
-        elif instr.opcode == JZ:
-          loop_start_label = peachpy.x86_64.Label()
-          loop_end_label = peachpy.x86_64.Label()
-          peachpy.x86_64.CMP([dataptr], 0)
-          peachpy.x86_64.JZ(loop_end_label)
-          peachpy.x86_64.LABEL(loop_start_label)
+            MOV(rax, 0)
+          MOV(rdi, 0)
+          MOV(off, instr.offset)
+          ADD(off, dataptr)
+          MOV(rsi, off)
+          MOV(rdx, 1)
+          SYSCALL()
+        elif instr.opcode == IRType.JZ:
+          loop_start_label = Label()
+          loop_end_label = Label()
+          CMP([dataptr], 0)
+          JZ(loop_end_label)
+          LABEL(loop_start_label)
           self.bracket_label_stack.append(
-            paired_labels(loop_start_label, loop_end_label))
-        elif instr.opcode == JNZ:
+              paired_labels(loop_start_label, loop_end_label))
+        elif instr.opcode == IRType.JNZ:
           assert len(self.bracket_label_stack), '怎么会是呢'
           label_pair = self.bracket_label_stack.pop()
-          peachpy.x86_64.CMP([dataptr], 0)
-          peachpy.x86_64.JNZ(label_pair.start_label)
-          peachpy.x86_64.LABEL(label_pair.end_label)
-      peachpy.x86_64.RETURN()
+          CMP([dataptr], 0)
+          JNZ(label_pair.start_label)
+          LABEL(label_pair.end_label)
+      RETURN()
     self.encoded_exec = exec.finalize(self.abi).encode()
     self.python_exec = self.encoded_exec.load()
 
