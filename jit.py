@@ -20,36 +20,37 @@ class JitVM:
     self.program_counter = 0
     self.bracket_label_stack = []
     self.abi = peachpy.x86_64.abi.detect()
+    self.instr = None
     self.init_function()
 
   def init_function(self):
     memptr = peachpy.Argument(peachpy.ptr(peachpy.uint8_t))
-    with Function('is_this_one_step', [memptr], result_type=None) as exec:
+    with Function('this_is_exec', [memptr], result_type=None) as exec:
       dataptr = r12
       off = r11
       LOAD.ARGUMENT(dataptr, memptr)
-      for instr in self.oplist:
-        if instr.opcode == IRType.ADD:
-          if instr.param > 0:
-            ADD([dataptr + instr.offset], instr.param)
+      for self.instr in self.oplist:
+        if self.instr.opcode == IRType.ADD:
+          if self.instr.param > 0:
+            ADD([dataptr + self.instr.offset], self.instr.param)
           else:
-            SUB([dataptr + instr.offset], -instr.param)
-        elif instr.opcode == IRType.SHR:
-          if instr.param > 0:
-            ADD(dataptr, instr.param)
+            SUB([dataptr + self.instr.offset], -self.instr.param)
+        elif self.instr.opcode == IRType.SHR:
+          if self.instr.param > 0:
+            ADD(dataptr, self.instr.param)
           else:
-            SUB(dataptr, -instr.param)
-        elif instr.opcode == IRType.LOAD:
-          MOV([dataptr + instr.offset], instr.param)
-        elif instr.opcode == IRType.MUL:
-          x, y = instr.param
+            SUB(dataptr, -self.instr.param)
+        elif self.instr.opcode == IRType.LOAD:
+          MOV([dataptr + self.instr.offset], self.instr.param)
+        elif self.instr.opcode == IRType.MUL:
+          x, y = self.instr.param
           y = int(y, 2)
           MOV(al, y)
           MUL([dataptr])
           # AND(rax, 0xff)
           ADD(al, [dataptr + x])
           MOV([dataptr + x], al)
-        elif instr.opcode == IRType.OUT:
+        elif self.instr.opcode == IRType.OUT:
           if sys.platform == 'win32':
             pass
           else:
@@ -58,12 +59,12 @@ class JitVM:
             else:
               MOV(rax, 1)
             MOV(rdi, 1)
-            MOV(off, instr.offset)
+            MOV(off, self.instr.offset)
             ADD(off, dataptr)
             MOV(rsi, off)
             MOV(rdx, 1)
             SYSCALL()
-        elif instr.opcode == IRType.IN:
+        elif self.instr.opcode == IRType.IN:
           if sys.platform == 'win32':
             pass
           else:
@@ -72,12 +73,12 @@ class JitVM:
             else:
               MOV(rax, 0)
             MOV(rdi, 0)
-            MOV(off, instr.offset)
+            MOV(off, self.instr.offset)
             ADD(off, dataptr)
             MOV(rsi, off)
             MOV(rdx, 1)
             SYSCALL()
-        elif instr.opcode == IRType.JZ:
+        elif self.instr.opcode == IRType.JZ:
           loop_start_label = Label()
           loop_end_label = Label()
           CMP([dataptr], 0)
@@ -85,7 +86,7 @@ class JitVM:
           LABEL(loop_start_label)
           self.bracket_label_stack.append(
               paired_labels(loop_start_label, loop_end_label))
-        elif instr.opcode == IRType.JNZ:
+        elif self.instr.opcode == IRType.JNZ:
           assert len(self.bracket_label_stack), '怎么会是呢'
           label_pair = self.bracket_label_stack.pop()
           CMP([dataptr], 0)

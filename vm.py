@@ -49,9 +49,10 @@ class InterpretVM:
 
 
 class PlainInterpretVM(InterpretVM):
-  def __init__(self, oplist: list[op.Op], tape_len=1 << 27, input=''):
+  def __init__(self, oplist: list[op.Op], tape_len=1 << 27, input='', output=sys.stdout):
     InterpretVM.__init__(self, oplist, tape_len)
     self.input = StringIO(input)
+    self.out_put = output
 
   def reset(self):
     self.tape_pointer = self.program_counter = 0
@@ -86,7 +87,9 @@ class PlainInterpretVM(InterpretVM):
     self.program_counter += 1
 
   def do_out(self):
-    sys.stdout.write(chr(self.tape[self.tape_pointer]))
+    self.out_put.write(chr(self.tape[self.tape_pointer]))
+    if self.out_put != sys.stdout:
+      sys.stdout.write(chr(self.tape[self.tape_pointer]))
     sys.stdout.flush()
     self.program_counter += 1
 
@@ -123,8 +126,8 @@ class PlainInterpretVM(InterpretVM):
 
 
 class OptimizedInterpretVM(PlainInterpretVM):
-  def __init__(self, ir_list: list[IR], tape_len=1 << 27, input=''):
-    PlainInterpretVM.__init__(self, ir_list, tape_len, input)
+  def __init__(self, ir_list: list[IR], tape_len=1 << 27, input='', output=sys.stdout):
+    PlainInterpretVM.__init__(self, ir_list, tape_len, input, output)
 
   def do_shr(self):
     self.tape_pointer += self.oplist[self.program_counter].param
@@ -158,6 +161,9 @@ class OptimizedInterpretVM(PlainInterpretVM):
   def do_out(self):
     sys.stdout.write(
         chr(self.tape[self.tape_pointer + self.oplist[self.program_counter].offset]))
+    if self.out_put != sys.stdout:
+      self.out_put.write(
+          chr(self.tape[self.tape_pointer + self.oplist[self.program_counter].offset]))
     sys.stdout.flush()
     self.program_counter += 1
 
