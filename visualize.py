@@ -31,7 +31,7 @@ if __name__ == '__main__':
   font = pygame.font.SysFont('monospace', 35, False, False)
   screen = pygame.display.set_mode([1280, 720])
   str_out = StringIO()
-  input_ = args.input
+  input_ = args.input + '\n'
   text = ''
   if args.file:
     text = ''.join(open(args.file, 'r').readlines())
