@@ -13,27 +13,34 @@ from optimize_gen import optimize_gen
 import pygame
 from pygame import sprite, surface
 import sys
+import argparse
 
 if __name__ == '__main__':
   optimize = False
+  arg = argparse.ArgumentParser(description='brainfuck visualizer')
+  arg.add_argument('-o', '--optimize', default=False,
+                   type=bool, help='set True to turn on Optimize')
+  arg.add_argument('-i', '--input', default='',
+                   type=str, help='input to the program')
+  arg.add_argument('-f', '--file', default='', type=str, help='bf program')
+  args = arg.parse_args()
   pygame.init()
   pygame.display.set_caption('brainfuck visualize')
   icon = pygame.image.load('icon.jpg')
   pygame.display.set_icon(icon)
   font = pygame.font.SysFont('monospace', 35, False, False)
-  text = ''
-  if len(sys.argv) > 1:
-    with open(sys.argv[1], 'r') as f:
-      text = ''.join(f.readlines())
-    if len(sys.argv) > 2:
-      if sys.argv[2] == 'optimize=1':
-        optimize = True
   screen = pygame.display.set_mode([1280, 720])
   str_out = StringIO()
-  pvm = PlainInterpretVM(op_gen(text), output=str_out)
-  ovm = OptimizedInterpretVM(optimize_gen(op_gen(text)), output=str_out)
+  input_ = args.input
+  text = ''
+  if args.file:
+    text = ''.join(open(args.file, 'r').readlines())
+  optimize = args.optimize
   if optimize:
-    pvm = ovm
+    pvm = OptimizedInterpretVM(optimize_gen(
+      op_gen(text)), input=input_, output=str_out)
+  else:
+    pvm = PlainInterpretVM(op_gen(text), input=input_, output=str_out)
   proceed = False
   i = 0
   while pvm.program_counter < len(pvm.oplist):
@@ -66,17 +73,20 @@ if __name__ == '__main__':
     pygame.draw.line(screen, (0, 0, 0), [0, 600], [960, 600], 2)
     for i in range(8):
       pygame.draw.rect(screen, (255, 255, 255), box, 120)
-      box.update(box.left+120, box.top, box.width, box.height)
+      box.update(box.left + 120, box.top, box.width, box.height)
     screen.fill((60, 179, 113), pygame.Rect(360, 480, 120, 120))
     for i in range(8):
-      pygame.draw.line(screen, (0, 0, 0), [(i+1) * 120, 480], [(i+1)*120, 600])
+      pygame.draw.line(screen, (0, 0, 0), [
+                       (i + 1) * 120, 480], [(i + 1) * 120, 600])
     box = pygame.Rect(0, 480, 120, 120)
     for i in range(8):
       screen.blit(font.render(
           hex(pvm.tape[pvm.tape_pointer - 3 + i]), True, (0, 0, 0)), box)
-      box.update(box.left+120, box.top, box.width, box.height)
-    screen.blit(font.render(f'mem at {pvm.tape_pointer}', 1, (65,105,255)), pygame.Rect(0, 601, 960, 100))
-    screen.blit(font.render(f'pc at {pvm.program_counter}', 1, (65,105,255)), pygame.Rect(0, 601+font.size(' ')[1], 960, 100))
+      box.update(box.left + 120, box.top, box.width, box.height)
+    screen.blit(font.render(
+      f'mem at {pvm.tape_pointer}', 1, (65, 105, 255)), pygame.Rect(0, 601, 960, 100))
+    screen.blit(font.render(f'pc at {pvm.program_counter}', 1, (65, 105, 255)), pygame.Rect(
+      0, 601 + font.size(' ')[1], 960, 100))
     c = pvm.out_put.getvalue()
     stdout_rect = pygame.Rect(0, 0, 960, 100)
     if c:
@@ -86,7 +96,7 @@ if __name__ == '__main__':
             '\n', '\\n'), True, (0, 0, 0)), stdout_rect)
         stdout_rect.update(stdout_rect.left + font.size(i)
                            [0], stdout_rect.top, stdout_rect.width, stdout_rect.height)
-        if stdout_rect.left >= 960-font.size('  ')[0]:
+        if stdout_rect.left >= 960 - font.size('  ')[0]:
           stdout_rect.update(0, stdout_rect.top + font.size(i)
                              [1], stdout_rect.width, stdout_rect.height)
     pygame.display.flip()
@@ -100,7 +110,7 @@ if __name__ == '__main__':
           '\n', '\\n'), True, (0, 0, 0)), stdout_rect)
       stdout_rect.update(stdout_rect.left + font.size(i)
                          [0], stdout_rect.top, stdout_rect.width, stdout_rect.height)
-      if stdout_rect.left >= 960-font.size('  ')[0]:
+      if stdout_rect.left >= 960 - font.size('  ')[0]:
         stdout_rect.update(0, stdout_rect.top + font.size(i)
                            [1], stdout_rect.width, stdout_rect.height)
   bye = pygame.font.SysFont('serif', 200, 0, 0)
