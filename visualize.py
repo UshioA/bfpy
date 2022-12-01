@@ -128,3 +128,4 @@ if __name__ == '__main__':
       elif e.type == pygame.QUIT:
         pygame.quit()
         exit(0)
+    pygame.display.flip()
