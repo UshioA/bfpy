@@ -4,6 +4,11 @@ from peachpy.x86_64 import *
 from peachpy.x86_64.registers import *
 from ir import *
 import sys
+c_void_p = ctypes.c_void_p
+putchar_address = ctypes.cast(ctypes.windll.msvcrt._write, c_void_p).value
+getchar_address = ctypes.cast(ctypes.windll.msvcrt._read, c_void_p).value
+func_ptr = Argument(ptr())
+
 
 class paired_labels:
   def __init__(self, start, end) -> None:
@@ -47,12 +52,17 @@ class JitVM:
           y = int(y, 2)
           MOV(al, y)
           MUL([dataptr])
-          # AND(rax, 0xff)
           ADD(al, [dataptr + x])
           MOV([dataptr + x], al)
         elif self.instr.opcode == IRType.OUT:
           if sys.platform == 'win32':
-            pass
+            MOV(rax, putchar_address)
+            MOV(rcx, 1)
+            LEA(rdx, [dataptr + self.instr.offset])
+            MOV(r8, 1)
+            SUB(rsp, 32)
+            CALL(rax)
+            ADD(rsp, 32)
           else:
             if sys.platform == 'darwin':
               MOV(rax, 0x2000004)
@@ -66,7 +76,13 @@ class JitVM:
             SYSCALL()
         elif self.instr.opcode == IRType.IN:
           if sys.platform == 'win32':
-            pass
+            MOV(rax, getchar_address)
+            MOV(rcx, 0)
+            LEA(rdx, [dataptr + self.instr.offset])
+            MOV(r8, 1)
+            SUB(rsp, 32)
+            CALL(rax)
+            ADD(rsp, 32)
           else:
             if sys.platform == 'darwin':
               MOV(rax, 0x2000003)
