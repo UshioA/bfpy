@@ -4,10 +4,11 @@ from peachpy.x86_64 import *
 from peachpy.x86_64.registers import *
 from ir import *
 import sys
-c_void_p = ctypes.c_void_p
-putchar_address = ctypes.cast(ctypes.windll.msvcrt._write, c_void_p).value
-getchar_address = ctypes.cast(ctypes.windll.msvcrt._read, c_void_p).value
-func_ptr = Argument(ptr())
+if sys.platform == 'win32':
+  c_void_p = ctypes.c_void_p
+  putchar_address = ctypes.cast(ctypes.windll.msvcrt._write, c_void_p).value
+  getchar_address = ctypes.cast(ctypes.windll.msvcrt._read, c_void_p).value
+  func_ptr = Argument(ptr())
 
 
 class paired_labels:

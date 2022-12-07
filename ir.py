@@ -24,7 +24,7 @@ class IR:
     self.offset = offset
 
   def __repr__(self):
-    return f'FoldOp<{self.opcode}, {self.jmptarget}, {self.param},{self.offset}>'
+    return f'IR<{self.opcode}, {self.jmptarget}, {self.param},{self.offset}>'
 
   def for_human(self):
     return text_table[self.opcode]
