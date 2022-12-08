@@ -1,4 +1,4 @@
-from jit import JitVM
+from vm import OptimizedInterpretVM
 from op_gen import op_gen
 from time import time
 from optimize_gen import *
@@ -10,8 +10,10 @@ if __name__ == '__main__':
     with open(argv[1], 'r') as f:
       text = ''.join(f.readlines())
   code = optimize_gen(op_gen(text))
-  jitvm = JitVM(code, 4096)
-  t1 = time()
-  jitvm.exec()
-  print()
-  print(time() - t1)
+  # for i, j in enumerate(code):
+  #   print(i, j)
+  i = ''
+  if len(argv) > 2:
+    i = '\n'.join(argv[2:] + ['\n'])
+  irvm = OptimizedInterpretVM(code, input=i)
+  irvm.exec()

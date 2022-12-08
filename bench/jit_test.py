@@ -11,7 +11,4 @@ if __name__ == '__main__':
       text = ''.join(f.readlines())
   code = optimize_gen(op_gen(text))
   jitvm = JitVM(code, 4096)
-  t1 = time()
   jitvm.exec()
-  print()
-  print(time() - t1)

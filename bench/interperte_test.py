@@ -1,17 +1,16 @@
-from jit import JitVM
+from vm import PlainInterpretVM
 from op_gen import op_gen
 from time import time
-from optimize_gen import *
-from io import StringIO
 import sys
 if __name__ == '__main__':
   argv = sys.argv
   if len(argv) > 1:
     with open(argv[1], 'r') as f:
       text = ''.join(f.readlines())
-  code = optimize_gen(op_gen(text))
-  jitvm = JitVM(code, 4096)
   t1 = time()
-  jitvm.exec()
-  print()
+  i = ''
+  if len(argv) > 2:
+    i = '\n'.join(argv[2:] + ['\n'])
+  ivm = PlainInterpretVM(op_gen(text), input=i)
+  ivm.exec()
   print(time() - t1)
