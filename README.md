@@ -5,7 +5,7 @@
 ## Usage
 
 ```text
-usage: bfpy.py [-h] [-o] [-i INPUT] [-f FILE] [-g] [-j] [-r]
+usage: bfpy [-h] [-o] [-i INPUT] [-f FILE] [-g] [-j] [-r]
 
 brainfuck visualizer
 

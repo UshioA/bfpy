@@ -94,7 +94,7 @@ def do_gui_vm(optimize, ir, _input, _file):
             non_stop = True
           else:
             jpressed = True
-        elif jpressed:
+        elif jpressed and not non_stop:
           if event.key == pygame.K_BACKSPACE:
             step = step[:-1]
           else:

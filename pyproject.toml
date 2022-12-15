@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [project]
 name = "bfpy"
-version = "1.0.2"
+version = "1.0.3"
 authors = [{ name = 'UshioA', email = "shiosshio@outlook.com" }]
 description = "A Brainfuck Jit Interpreter, with a simple frontend written in pygame"
 requires-python = ">=3.5"
