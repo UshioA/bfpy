@@ -20,6 +20,10 @@ optional arguments:
   -r, --ir              turn on to enable ir
 ```
 
+### On graphic mode
+
+Hold key `left` to continuously execute step by step, release to stop;Keys `up` and `down` to scroll the output.Key `space` to execute one_step, if you are curious.Press key `j`, and input some `number`, and press `j` again to execute `number` steps before display current status. While executing, screen won't be freshed so it's much faster than holding key `left`. If you input nothing between two pressing `j`, then vm will execute until end. Backspace in `j` mode is supported.
+
 Note that the graphic part is written with pygame, quick-and-dirty, by me **drunk**. You cannot expect too much from it.
 
 ## License
